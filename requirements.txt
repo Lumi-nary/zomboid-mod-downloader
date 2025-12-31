@@ -1,0 +1,10 @@
+# Zomboid Mod Downloader Requirements
+
+# GUI Framework
+PySide6>=6.6.0
+
+# Build Tools
+pyinstaller>=6.0.0
+
+# Additional utilities (optional, for future enhancements)
+# requests>=2.31.0  # For potential Steam API integration

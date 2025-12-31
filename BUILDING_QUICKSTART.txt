@@ -1,0 +1,45 @@
+====================================================
+  ZOMBOID MOD DOWNLOADER - BUILD QUICK START
+====================================================
+
+BUILD IN 3 EASY STEPS:
+----------------------
+
+1. Open Command Prompt
+
+2. Navigate to project folder:
+   cd "E:\Zomboid Mod Downloader"
+
+3. Run build script:
+   build.bat
+
+THAT'S IT!
+
+====================================================
+
+OUTPUT:
+-------
+Application folder: dist\ZomboidModDownloader\
+Main executable:    dist\ZomboidModDownloader\ZomboidModDownloader.exe
+
+Folder size: ~200-300 MB (includes all dependencies)
+
+====================================================
+
+DISTRIBUTION:
+-------------
+Share the ENTIRE "ZomboidModDownloader" folder with users
+
+You can ZIP it first for easier sharing:
+   cd dist
+   powershell Compress-Archive -Path ZomboidModDownloader -DestinationPath ZomboidModDownloader.zip
+
+IMPORTANT: All files must stay together!
+Don't move just the .exe file - it needs the DLLs.
+
+====================================================
+
+DETAILED INSTRUCTIONS:
+See BUILD.md for complete documentation
+
+====================================================

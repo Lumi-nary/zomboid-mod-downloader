@@ -1,16 +1,26 @@
-# Zomboid Mod Downloader
+# 🧟 Zomboid Mod Downloader
 
-A desktop application for browsing and downloading Project Zomboid mods from Steam Workshop using SteamCMD.
+> A desktop application for browsing and downloading Project Zomboid mods from Steam Workshop using SteamCMD.
 
-## Features
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PySide6](https://img.shields.io/badge/PySide6-6.6+-green.svg)](https://pypi.org/project/PySide6/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- **Steam Workshop Browser**: Browse Project Zomboid mods directly within the app
-- **Easy Mod Selection**: Click "Add to Queue" buttons on mod thumbnails
-- **Batch Downloads**: Download multiple mods at once with SteamCMD
-- **Download Queue**: Manage your download queue with add/remove functionality
-- **Progress Tracking**: Real-time SteamCMD output and download progress
-- **Download History**: Tracks previously downloaded mods
-- **Flexible Authentication**: Support for both anonymous and authenticated Steam login
+![Screenshot](docs/screenshot.png)
+*Browse and download Project Zomboid mods with ease*
+
+## ✨ Features
+
+- 🌐 **Embedded Steam Workshop Browser** - Browse mods without leaving the app
+- 🎯 **One-Click Downloads** - "Add to Queue" buttons on mod thumbnails
+- 📦 **Automatic Dependencies** - Detects and downloads required mods automatically
+- 🔄 **Batch Downloads** - Download multiple mods simultaneously with SteamCMD
+- 📋 **Smart Queue Management** - Add, remove, and organize your download queue
+- 📊 **Real-time Progress** - Live SteamCMD output and download status
+- 🗂️ **Local Mods Browser** - View, manage, and delete downloaded mods
+- 🔗 **Workshop URL Tracking** - Links downloaded mods back to Steam Workshop
+- 🔐 **Flexible Authentication** - Anonymous or Steam account login
+- 🎨 **Dark Theme UI** - Easy on the eyes with modern design
 
 ## Prerequisites
 
@@ -125,10 +135,39 @@ Mods are automatically extracted from the workshop structure and placed directly
 - Some Workshop features (ratings, comments) use Steam's interface
 - Download progress is shown as SteamCMD console output (not a progress bar percentage)
 
-## License
+## 📦 Building Executable
+
+Want to create a standalone .exe? See [BUILD.md](BUILD.md) for detailed build instructions.
+
+**Quick build:**
+```bash
+build.bat
+```
+
+The application will be built in `dist/ZomboidModDownloader/` as a folder with all dependencies included (~200-300 MB).
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+- 🐛 Report bugs via [Issues](../../issues)
+- 💡 Suggest features via [Issues](../../issues)
+- 🔧 Submit pull requests
+- 📖 Improve documentation
+
+## 📄 License
 
 This project is for educational purposes. Steam, SteamCMD, and Project Zomboid are properties of their respective owners.
 
-## Credits
+## 🙏 Credits
 
-Inspired by [RimSort](https://github.com/RimSort/RimSort/), a similar tool for RimWorld mod management.
+- Inspired by [RimSort](https://github.com/RimSort/RimSort/) - Mod manager for RimWorld
+- Built with [PySide6](https://wiki.qt.io/Qt_for_Python)
+- Powered by [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD)
+
+## ⭐ Star History
+
+If you find this project useful, consider giving it a star!
+
+---
+
+**Made with ❤️ for the Project Zomboid community**

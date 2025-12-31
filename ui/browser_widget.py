@@ -1,10 +1,11 @@
 """
 Steam Workshop browser widget with JavaScript injection for mod selection.
 """
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFileDialog, QMessageBox
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineScript
 from PySide6.QtCore import QUrl, Signal, Slot
+import json
 
 
 class WorkshopBrowserWidget(QWidget):
@@ -28,6 +29,12 @@ class WorkshopBrowserWidget(QWidget):
 
         # Navigation bar
         nav_layout = QHBoxLayout()
+
+        # Import button
+        self.import_btn = QPushButton("Import Mod List")
+        self.import_btn.clicked.connect(self._import_mod_list)
+        self.import_btn.setMaximumWidth(120)
+        nav_layout.addWidget(self.import_btn)
 
         # Home button
         self.home_btn = QPushButton("Home")
@@ -109,6 +116,119 @@ class WorkshopBrowserWidget(QWidget):
         """
         self.installed_mod_ids = installed_mod_ids
         self.page._inject_button_script()
+
+    def _import_mod_list(self):
+        """Import a mod list from JSON file and add mods to download queue."""
+        # Ask user to select JSON file
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Mod List",
+            "",
+            "JSON Files (*.json);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        # Read and parse JSON file
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                mod_list_data = json.load(f)
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Import Failed",
+                f"Failed to read mod list file:\n{e}"
+            )
+            return
+
+        # Validate JSON structure
+        if not isinstance(mod_list_data, dict) or "mods" not in mod_list_data:
+            QMessageBox.critical(
+                self,
+                "Invalid Format",
+                "The selected file is not a valid mod list.\n\n"
+                "Expected format: JSON file with 'mods' array."
+            )
+            return
+
+        mods = mod_list_data.get("mods", [])
+        if not mods:
+            QMessageBox.information(
+                self,
+                "Empty List",
+                "The mod list is empty."
+            )
+            return
+
+        # Filter out mods that are already installed (silent skip)
+        mods_to_add = []
+        skipped_count = 0
+
+        for mod in mods:
+            if not isinstance(mod, dict):
+                continue
+
+            workshop_id = mod.get("workshop_id")
+            if not workshop_id:
+                continue
+
+            # Skip if already installed
+            if workshop_id in self.installed_mod_ids:
+                skipped_count += 1
+                continue
+
+            mods_to_add.append(mod)
+
+        # Check if we have any mods to add
+        if not mods_to_add:
+            if skipped_count > 0:
+                QMessageBox.information(
+                    self,
+                    "All Installed",
+                    f"All {skipped_count} mod(s) from the list are already installed.\n\n"
+                    "No new mods to add."
+                )
+            else:
+                QMessageBox.information(
+                    self,
+                    "No Valid Mods",
+                    "No valid mods found in the list."
+                )
+            return
+
+        # Show confirmation
+        msg = f"Found {len(mods_to_add)} mod(s) to add to download queue."
+        if skipped_count > 0:
+            msg += f"\n\n({skipped_count} already installed, skipped)"
+
+        reply = QMessageBox.question(
+            self,
+            "Import Mod List",
+            msg + "\n\nAdd all mods to download queue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Add all mods to queue
+        added_count = 0
+        for mod in mods_to_add:
+            workshop_id = mod.get("workshop_id")
+            mod_name = mod.get("name", "Unknown Mod")
+
+            # Emit signal to add mod to queue
+            self.mod_added.emit(workshop_id, mod_name)
+            added_count += 1
+
+        # Show success message
+        QMessageBox.information(
+            self,
+            "Import Successful",
+            f"Added {added_count} mod(s) to download queue!"
+        )
 
 
 class WorkshopPage(QWebEnginePage):

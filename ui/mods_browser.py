@@ -4,12 +4,13 @@ Local mods browser widget for managing installed mods.
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem,
     QPushButton, QLabel, QMessageBox, QHeaderView, QMenu, QSplitter,
-    QListWidget, QListWidgetItem, QTextEdit, QFrame
+    QListWidget, QListWidgetItem, QTextEdit, QFrame, QFileDialog
 )
 from PySide6.QtCore import Qt, Signal, QUrl
 from PySide6.QtGui import QDesktopServices, QAction, QPixmap
 from pathlib import Path
 import shutil
+import json
 
 
 class ModsBrowser(QWidget):
@@ -154,6 +155,10 @@ class ModsBrowser(QWidget):
         header_layout.addWidget(self.mod_count_label)
 
         header_layout.addStretch()
+
+        self.export_button = QPushButton("Export Mod List")
+        self.export_button.clicked.connect(self._export_mod_list)
+        header_layout.addWidget(self.export_button)
 
         self.refresh_button = QPushButton("Refresh")
         self.refresh_button.clicked.connect(self.refresh_mods)
@@ -577,3 +582,137 @@ class ModsBrowser(QWidget):
                         mod_ids.add(match.group(1))
 
         return mod_ids
+
+    def _export_mod_list(self):
+        """Export installed mods list to JSON file."""
+        if not self.mod_path or not self.mod_path.exists():
+            QMessageBox.warning(
+                self,
+                "No Mod Path",
+                "Mod path not set. Please configure it in Settings first."
+            )
+            return
+
+        # Get all installed mods
+        installed_folders = [f for f in self.mod_path.iterdir() if f.is_dir() and not f.name.startswith('.')]
+
+        if not installed_folders:
+            QMessageBox.information(
+                self,
+                "No Mods",
+                "No mods found to export."
+            )
+            return
+
+        # Ask user whether to export all or selected mods
+        reply = QMessageBox.question(
+            self,
+            "Export Mod List",
+            f"Export all {len(installed_folders)} mods or only selected mods?\n\n"
+            "Click 'Yes' to export ALL mods\n"
+            "Click 'No' to export only SELECTED mods",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Yes
+        )
+
+        if reply == QMessageBox.StandardButton.Cancel:
+            return
+
+        # Determine which mods to export
+        mods_to_export = []
+
+        if reply == QMessageBox.StandardButton.Yes:
+            # Export all mods
+            mods_to_export = installed_folders
+        else:
+            # Export only selected mods
+            selected_items = self.mods_list.selectedItems()
+            if not selected_items:
+                QMessageBox.warning(
+                    self,
+                    "No Selection",
+                    "No mods selected. Please select mods to export or choose to export all."
+                )
+                return
+
+            for item in selected_items:
+                mod_folder_path = item.data(Qt.ItemDataRole.UserRole)
+                mods_to_export.append(Path(mod_folder_path))
+
+        # Build JSON data
+        mod_list_data = {
+            "version": "1.0",
+            "export_date": None,
+            "mods": []
+        }
+
+        # Add timestamp
+        from datetime import datetime
+        mod_list_data["export_date"] = datetime.now().isoformat()
+
+        # Collect mod information
+        for mod_folder in mods_to_export:
+            mod_data = {
+                "folder_name": mod_folder.name,
+                "name": self._get_mod_name(mod_folder),
+                "workshop_id": None,
+                "workshop_url": None
+            }
+
+            # Try to get workshop ID and URL
+            # Priority 1: Folder name is numeric (workshop ID)
+            if mod_folder.name.isdigit():
+                mod_data["workshop_id"] = mod_folder.name
+                mod_data["workshop_url"] = f"https://steamcommunity.com/sharedfiles/filedetails/?id={mod_folder.name}"
+            # Priority 2: Check database for stored URL
+            elif self.database:
+                workshop_url = self.database.get_mod_workshop_url(mod_folder.name)
+                if workshop_url:
+                    mod_data["workshop_url"] = workshop_url
+                    # Extract ID from URL
+                    import re
+                    match = re.search(r'[?&]id=(\d+)', workshop_url)
+                    if match:
+                        mod_data["workshop_id"] = match.group(1)
+
+            # Only add mods that have workshop information
+            if mod_data["workshop_id"]:
+                mod_list_data["mods"].append(mod_data)
+
+        # Check if we have any mods with workshop info
+        if not mod_list_data["mods"]:
+            QMessageBox.warning(
+                self,
+                "No Workshop Mods",
+                "None of the selected mods have Steam Workshop information.\n\n"
+                "Only mods downloaded from the Workshop Browser can be exported."
+            )
+            return
+
+        # Ask user where to save
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Mod List",
+            "my_mods.json",
+            "JSON Files (*.json);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        # Write JSON file
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(mod_list_data, f, indent=2, ensure_ascii=False)
+
+            QMessageBox.information(
+                self,
+                "Export Successful",
+                f"Exported {len(mod_list_data['mods'])} mod(s) to:\n{file_path}"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Export Failed",
+                f"Failed to export mod list:\n{e}"
+            )

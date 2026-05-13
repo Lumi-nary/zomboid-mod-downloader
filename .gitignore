@@ -1,34 +1,16 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-*.spec.bak
-*.manifest
-*.exe.log
-
-# Virtual Environment
-venv/
-ENV/
-env/
+# Tauri / frontend
+node_modules/
+dist-tauri-ui/
+src-tauri/target/
+src-tauri/target-gnu/
+src-tauri/gen/
+target-gnu/
+release/
+screenshots/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # IDE
 .vscode/
@@ -42,6 +24,7 @@ settings.json
 zomboid_mods.db
 *.log
 SteamCMD/
+steamcmd/
 
 # OS
 .DS_Store

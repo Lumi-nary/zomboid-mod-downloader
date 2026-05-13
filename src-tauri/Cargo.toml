@@ -1,0 +1,22 @@
+[package]
+name = "zomboid-mod-downloader"
+version = "2.0.0"
+description = "Browse and download Project Zomboid Steam Workshop mods with SteamCMD."
+authors = ["Zomboid Mod Downloader"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5"
+open = "5"
+regex = "1"
+rusqlite = { version = "0.31", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = ["unstable"] }
+tauri-plugin-opener = "2"
+walkdir = "2"
+windows = { version = "0.61.3", features = ["Win32_Foundation", "Win32_System_Com", "Win32_UI_Shell"] }
